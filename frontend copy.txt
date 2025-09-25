@@ -1,0 +1,178 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Paper,
+  LinearProgress
+} from '@mui/material';
+import {
+  People as PeopleIcon,
+  AttachMoney as MoneyIcon,
+  Warning as WarningIcon,
+  TrendingUp as TrendingUpIcon
+} from '@mui/icons-material';
+import { memberAPI, paymentAPI } from '../services/api';
+
+const StatCard = ({ title, value, icon, color, subtitle }) => (
+  <Card>
+    <CardContent>
+      <Box display="flex" alignItems="center">
+        <Box flexGrow={1}>
+          <Typography color="textSecondary" gutterBottom variant="body2">
+            {title}
+          </Typography>
+          <Typography variant="h4" component="div">
+            {value}
+          </Typography>
+          {subtitle && (
+            <Typography variant="body2" color="textSecondary">
+              {subtitle}
+            </Typography>
+          )}
+        </Box>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          width={60}
+          height={60}
+          borderRadius="50%"
+          sx={{ bgcolor: (theme) => theme.palette[color]?.main }}
+        >
+          {React.cloneElement(icon, { style: { color: '#fff' } })}
+        </Box>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    monthlyRevenue: 0,
+    pendingPayments: 0,
+    overduePayments: 0
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const loadStats = async () => {
+    try {
+      const [memberStats, paymentStats] = await Promise.all([
+        memberAPI.getStats(),
+        paymentAPI.getStats()
+      ]);
+
+      setStats({
+        totalMembers: memberStats.data?.totalMembers || 0,
+        monthlyRevenue: paymentStats.data?.monthlyRevenue || 0,
+        pendingPayments: paymentStats.data?.pendingPayments || 0,
+        overduePayments: paymentStats.data?.overduePayments || 0
+      });
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <LinearProgress />;
+  }
+
+  return (
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>
+        Gym Dashboard
+      </Typography>
+      
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Total Members"
+            value={stats.totalMembers}
+            icon={<PeopleIcon />}
+            color="primary"
+            subtitle="Active memberships"
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Monthly Revenue"
+            value={`₹${stats.monthlyRevenue.toLocaleString()}`}
+            icon={<MoneyIcon />}
+            color="success"
+            subtitle="This month"
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Pending Payments"
+            value={stats.pendingPayments}
+            icon={<WarningIcon />}
+            color="warning"
+            subtitle="Requires attention"
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Overdue Payments"
+            value={stats.overduePayments}
+            icon={<TrendingUpIcon />}
+            color="error"
+            subtitle="Immediate action needed"
+          />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} mt={2}>
+        <Grid item xs={12} md={8}>
+          <Paper sx={{ p: 3, height: 400 }}>
+            <Typography variant="h6" gutterBottom>
+              Revenue Trends
+            </Typography>
+            <Box 
+              display="flex" 
+              alignItems="center" 
+              justifyContent="center" 
+              height="100%"
+            >
+              <Typography color="textSecondary">
+                Chart component would go here
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+        
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 3, height: 400 }}>
+            <Typography variant="h6" gutterBottom>
+              Recent Activities
+            </Typography>
+            <Box 
+              display="flex" 
+              alignItems="center" 
+              justifyContent="center" 
+              height="100%"
+            >
+              <Typography color="textSecondary">
+                Activity feed would go here
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
+  );
+};
+
+export default Dashboard;https://github.com/Nishanthreddy27/gym-membership-reminder.git
