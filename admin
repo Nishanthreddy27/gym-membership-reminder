@@ -1,0 +1,13 @@
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
+const adminSchema = new mongoose.Schema({
+    username: String,
+    password_hash: String
+});
+
+adminSchema.methods.comparePassword = function(password) {
+    return bcrypt.compareSync(password, this.password_hash);
+}
+
+module.exports = mongoose.model('Admin', adminSchema);
